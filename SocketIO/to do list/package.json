@@ -1,0 +1,17 @@
+{
+  "name": "socket-to-do-list-example",
+  "version": "0.0.1",
+  "description": "my to do list with socket.io app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Linh Ngo",
+  "license": "ISC",
+  "dependencies": {
+    "ent": "^2.2.0",
+    "express": "^4.15.2",
+    "socket.io": "^1.7.3"
+  }
+}

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Todo List</title>
+	<link rel="stylesheet" type="text/css" href="assets/css/todos.css">
+	<link href='https://fonts.googleapis.com/css?family=Roboto:400,700,500' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.css">
+</head>
+
+<body>
+
+	<div id="container">
+		<h1>To-Do List <i class="fa fa-plus"></i></h1>
+		<input type="text" placeholder="Add New Todo">
+
+		<ul>
+			<li id="04fd0f36-dd8e-4a4a-857e-a2396ee13da0"><span><i class="fa fa-trash"></i></span> Go To Potions Class</li>
+			<li id="581b9cde-de77-4396-90f8-6e55a95e2b9c"><span><i class="fa fa-trash"></i></span> Buy New Robes</li>
+			<li id="361a44fe-94b6-48c9-b87b-034d125f3f5c"><span><i class="fa fa-trash"></i></span> Visit Hagrid</li>
+		</ul>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<!--<script type="text/javascript" src="assets/js/todos.js"></script>-->
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		$(function () {
+
+			//=======================================
+			//SOCKET IO 
+			//========================================
+			// connect to socket.io
+			const socket = io();
+
+			// new client is requested to register an username
+			const username = prompt("What's your username?");
+			console.log(username);
+			// send to server
+			socket.emit('new_client', username);
+			// display in browser's title and on pages
+			document.title = username + ' - ' + document.title;
+
+			// display an announcement when a new user connects
+			socket.on('new_client', (username) => {
+				alert(`${username} has joined the team to do list!`);
+			});
+
+			//=======================================
+			//JS FRONT END BEHAVIOUR
+			//========================================
+			//
+			function generateUUID() {
+				var d = Date.now();
+				if (window.performance && typeof window.performance.now === "function") {
+					d += performance.now();; //use high-precision timer if available
+				}
+				var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+					var r = (d + Math.random() * 16) % 16 | 0;
+					d = Math.floor(d / 16);
+					return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+				});
+				return uuid;
+			};
+			//
+			// insert to-do list on pages
+			const insertTodo = (todoId, todoText) => {
+				$("ul").append(`<li id="${todoId}"><span><i class='fa fa-trash'></i></span> ${todoText} </li>`);
+			}
+			// add a new to-do
+			$("input[type='text']").keypress(function (event) {
+				if (event.which === 13) {
+					//grabbing new todo text from input
+					let todoText = $(this).val();
+					$(this).val("");
+					// generate an unique ID 
+					let todoId = generateUUID();
+					//create a new li and add to ul
+					insertTodo(todoId, todoText);
+					//send data to server
+					socket.emit('new_todo', { id: todoId, text: todoText });
+					return false;
+				}
+			});
+			// receive data when 'new_todo' event happens
+			socket.on('new_todo', (data) => {
+				alert(`${data.username} adds a new to-do`);
+				insertTodo(data.id, data.text);
+			});
+
+			// Check Off Specific Todos By Clicking
+			$("ul").on("click", "li", function () {
+				$(this).toggleClass("completed");
+				//get the id of <li> to send to server
+				let doneId = $(this).attr('id');
+				socket.emit('done_todo', doneId);
+			});
+			// receive data when 'done_todo' happens
+			socket.on('done_todo', (data) => {
+				let doneText = $('#' + data.id).text();
+				alert(`${data.username} finishes "${doneText}" to-do`);
+				$("#" + data.id).toggleClass("completed");
+			});
+
+			//Click on X to delete Todo
+			$("ul").on("click", "span", function (event) {
+				$(this).parent().fadeOut(500, function () {
+					//get the id of <li> to send to server
+					let deletedId = $(this).attr('id');
+					socket.emit('delete_todo', deletedId);
+					$(this).remove();
+				});
+				event.stopPropagation();
+			});
+			// receive data when 'delete_todo' happens
+			socket.on('delete_todo', (data) => {
+				let deletedText = $('#' + data.id).text();
+				alert(`${data.username} deletes "${deletedText}" to-do`);
+				$('#' + data.id).remove();
+			});
+
+
+			$(".fa-plus").click(function () {
+				$("input[type='text'").fadeToggle()
+			});
+
+		});
+	</script>
+</body>
+
+</html>
