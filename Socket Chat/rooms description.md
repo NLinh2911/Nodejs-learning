@@ -17,6 +17,13 @@
         clients: array [client1, client2,...]
     }
     const allRooms = [room1, room2, ....]
+    // hoặc lưu tất cả các room vào object 
+    const allRooms = {
+        room1 : {...},
+        room2 : {...},
+        ......
+    }
+    //allRooms[room1] = room1; 
 ```
 ## Methods của mỗi room
 
@@ -25,14 +32,22 @@
 3. Join: clients tham gia room khi click vào room đó -> quantity và clients của phòng sẽ đc cập nhật
 4. Leave: rời phòng -> tương tự cập nhật quantity và clients của room đó
 
-### Create room event: 1 room object mới được tạo ra 
+### Create room event: 1 room object mới được tạo ra
+
 * Room ID được tạo 
 * Room name lưu thông tin client truyền vào
 * Room creator là tên client
 * Quantity: 1
 * Clients: array chứa 1 phần tử là creator 
+#### Socket.on('create_room',....)
+
+* nhận creatorID và room name đc emit từ client -> tạo uuid cho room -> let newRoom = new Room(uuid, name, creatorID)
+* push room mới này vào allRooms - array chứa tất cả rooms
+* room.addClient(creatorID)
+* cập nhật thông tin bên user/client -> client.createRoom = newRoom; 
 
 ### Delete room event: xóa room object này khỏi object tổng chứa tất cả các room objects
+
 * Xóa room object
 * Báo clients trong room là room này đã bị xóa -> cập nhật danh sách room
 * Cập nhật danh sách rooms của mỗi clients
@@ -40,4 +55,5 @@
 ### Join hoặc Leave room event: 1 client tham gia hoặc rời 1 room
 * cập nhật quantity và clients của room
 * cập nhật danh sách room của client đó
+
 
