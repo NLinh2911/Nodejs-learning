@@ -17,9 +17,6 @@
 		<input type="text" placeholder="Add New Todo">
 
 		<ul>
-			<li id="04fd0f36-dd8e-4a4a-857e-a2396ee13da0"><span><i class="fa fa-trash"></i></span> Go To Potions Class</li>
-			<li id="581b9cde-de77-4396-90f8-6e55a95e2b9c"><span><i class="fa fa-trash"></i></span> Buy New Robes</li>
-			<li id="361a44fe-94b6-48c9-b87b-034d125f3f5c"><span><i class="fa fa-trash"></i></span> Visit Hagrid</li>
 		</ul>
 	</div>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -46,24 +43,15 @@
 			socket.on('new_client', (username) => {
 				alert(`${username} has joined the team to do list!`);
 			});
-
+			socket.on('update data', (data) => {
+				console.log(data);
+				data.forEach((todo) => {
+					insertTodo(todo.id, todo.todo);
+				})
+			})
 			//=======================================
 			//JS FRONT END BEHAVIOUR
 			//========================================
-			//
-			function generateUUID() {
-				var d = Date.now();
-				if (window.performance && typeof window.performance.now === "function") {
-					d += performance.now();; //use high-precision timer if available
-				}
-				var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-					var r = (d + Math.random() * 16) % 16 | 0;
-					d = Math.floor(d / 16);
-					return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-				});
-				return uuid;
-			};
-			//
 			// insert to-do list on pages
 			const insertTodo = (todoId, todoText) => {
 				$("ul").append(`<li id="${todoId}"><span><i class='fa fa-trash'></i></span> ${todoText} </li>`);
@@ -74,12 +62,8 @@
 					//grabbing new todo text from input
 					let todoText = $(this).val();
 					$(this).val("");
-					// generate an unique ID 
-					let todoId = generateUUID();
-					//create a new li and add to ul
-					insertTodo(todoId, todoText);
 					//send data to server
-					socket.emit('new_todo', { id: todoId, text: todoText });
+					socket.emit('new_todo', todoText);
 					return false;
 				}
 			});
