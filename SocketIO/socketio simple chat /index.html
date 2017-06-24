@@ -2,116 +2,113 @@
 <html>
 
 <head>
-    <title>Socket.IO chat</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font: 13px Helvetica, Arial;
-        }
-        
-        form {
-            background: #000;
-            padding: 3px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-        
-        form input {
-            border: 0;
-            padding: 10px;
-            width: 90%;
-            margin-right: .5%;
-        }
-        
-        form button {
-            width: 9%;
-            background: rgb(130, 224, 255);
-            border: none;
-            padding: 10px;
-        }
-        
-        #messages {
-            list-style-type: none;
-            padding: 10px;
-        }
-        
-        #messages li {
-            padding: 5px 10px;
-            border: 1px solid #757575;
-            border-radius: 3px;
-            margin: 5px 0;
-            overflow-wrap: break-word;
-        }
-        
-        #messages li:nth-child(odd) {
-            background: #eee;
-        }
-        
-        .username {
-            color: rgb(34, 165, 208);
-            /*padding: 10px;*/
-        }
-    </style>
+  <title>Socket.IO chat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font: 13px Helvetica, Arial;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      padding: 3px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+
+    form input {
+      border: 2px solid;
+      padding: 10px;
+      flex: 1;
+      margin-right: .5%;
+    }
+
+    form button {
+      flex: 1;
+      background: rgb(130, 224, 255);
+      border: none;
+      padding: 10px;
+    }
+
+    @media only screen and (min-width: 768px) {
+      form {
+        flex-direction: row;
+      }
+      form input {
+        flex: 3;
+      }
+    }
+
+    #messages,
+    #feedback {
+      list-style-type: none;
+      padding: 10px;
+    }
+
+    #feedback {
+      font-size: 20px;
+      color: gray;
+      font-style: italic;
+    }
+
+    #messages li {
+      padding: 5px 10px;
+      border: 1px solid #757575;
+      border-radius: 3px;
+      margin: 5px 0;
+      overflow-wrap: break-word;
+    }
+
+    #messages li:nth-child(odd) {
+      background: #eee;
+    }
+
+    .username {
+      color: rgb(34, 165, 208);
+      /*padding: 10px;*/
+    }
+  </style>
 </head>
 
 <body>
-    <!--<input type="text" id="name" size="80">-->
-    <ul id="messages"></ul>
-    <form action="">
-        <input type="text" name="message" id="m" autocomplete="off" /><button>Send</button>
-    </form>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-    <script>
-        $(function () {
-            // connect to socket.io
-            const socket = io();
-            // new client is requested to register an username
-            socket.on('connection', () => {
-                let username = prompt("What's your username?");
-                // send to server
-                socket.emit('new_client', username);
-            });
-            // display in browser's title and on pages
-            document.title = username + ' - ' + document.title;
-            $('#messages').append(`<li> You has joined the chat!</li>`);
+  <ul id="messages"></ul>
+  <ul id="feedback"></ul>
 
-            //
-            socket.on('user_disconnect', (username) => {
-                $('#messages').append(`<li><em> ${username} </em> has left the chat!</li>`);
-            })
-            // display an announcement when a new user connects
-            socket.on('new_client', (username) => {
-                $('#messages').append(`<li><em> ${username} </em> has joined the chat!</li>`);
-            });
+  <form action="">
+    <input type="text" name="message" id="msg" placeholder="Type message..." autocomplete="off" />
+    <button>Send</button>
+  </form>
 
-            // when the form is submitted, the message is sent to server
-            $('form').submit(() => {
-                let message = $('#m').val();
-                //let chatter = $('#name').val();
-                socket.emit('chat_message', message);
-                insertMsg("Me", message)
-                $('#m').val('').focus();
-                return false; // will not reload the page
-            });
-            // receive the data sent back from server and display on page
-            socket.on('chat_message', (data) => {
-                insertMsg(data.username, data.message);
-            });
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+  //=================SOCKET.IO=========================================
+  $(function () {
+    const socket = io('http://localhost:4000/');
 
-            // insert messages on pages
-            const insertMsg = (username, message) => {
-                $('#messages').append(`<li><strong class="username">${username}</strong> : ${message}</li>`);
-            }
-        });
-    </script>
+    socket.on('connect', () => {
+      let username = prompt('What is your username?');
+      // emit username back to server
+      socket.emit('new_client', username);
+    });
+
+    socket.on('new_client', (username) => {
+      $('#messages').append(`<li>${username} joined the chat room<..li>`)  
+      })
+  });
+
+  
+  
+  </script>
 </body>
 
 </html>

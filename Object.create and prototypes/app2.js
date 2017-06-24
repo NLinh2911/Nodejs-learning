@@ -13,8 +13,8 @@ main_obj.greet();
 
 // .call() and .apply() points to the object passed to it
 // that passed obj overwrites 'this' in the main obj
-obj.greet.call({name: 'Jack'});
-obj.greet.apply({name: 'David'});
+main_obj.greet.call({name: 'Jack'});
+main_obj.greet.apply({name: 'David'});
 // differences between .call and .apply are in the way they handle parameters
 // if greet() has several params, with call(), they are passed in directly as params of call()
 // e.g. obj.greet.call({...}, param1, param2);

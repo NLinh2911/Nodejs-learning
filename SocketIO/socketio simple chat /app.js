@@ -1,21 +1,23 @@
-const app = require('express')();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
-const ent = require('ent');
-const fs = require('fs');
+const express = require('express');
+const socket = require('socket.io');
 
-// Load index.html
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+// Express App setup
+const app = express();
+const server = app.listen(4000, function () {
+  console.log('listening for requests on port 4000');
 });
-//
- 
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index1.html');
+});
+
+// Socket setup & pass server
+const io = socket(server);
 io.on('connection', (socket) => {
   // when an user connects, their username is received and stored as a session var
   socket.on('new_client', (username) => {
-    username = ent.encode(username);
     socket.username = username;
-    socket.broadcast.emit('new_client', username);
+    io.sockets.emit('new_client', username);
     console.log(socket.username + ' connected');
   });
 
@@ -26,14 +28,15 @@ io.on('connection', (socket) => {
 
   // when a new message is received
   socket.on('chat_message', (message) => {
-    console.log(message);
-    message = ent.encode(message);
-    socket.broadcast.emit('chat_message', { username: socket.username, message: message });
+    //console.log(message);
+    // server now emits the data to all connected clients
+    io.sockets.emit('chat_message', { username: socket.username, message: message });
   });
-});
 
+  // Handle typing event
+  socket.on('typing', function () {
+    // server emits to all other connected clients except for the sender
+    socket.broadcast.emit('typing', socket.username);
+  });
 
-
-http.listen(3000, () => {
-  console.log('listening on *:3000');
 });

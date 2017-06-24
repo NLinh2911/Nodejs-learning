@@ -24,3 +24,7 @@ util.inherits(Policeman, Person);
 const officer = new Policeman();
 // w/o Person.call(this) -> return 'Hello undefined undefined' 
 officer.greet();
+Policeman.prototype = Person.prototype
+console.log(officer._proto_);
+console.log(Person.prototype);
+console.log(Policeman.prototype);
